@@ -25,7 +25,7 @@ public class EventSessions
 		string eventId)
 	{
 		string subscriptionKey = "";
-		if (req.Headers.TryGetValue("subscriptionKey", out StringValues headerValues))
+		if (req.Headers.TryGetValue("Ocp-Apim-Subscription-Key", out StringValues headerValues))
 		{
 			subscriptionKey = headerValues.FirstOrDefault();
 		}

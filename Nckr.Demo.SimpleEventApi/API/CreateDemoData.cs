@@ -292,7 +292,31 @@ public class CreateDemoData
 			EventId = eventId,
 			Name = "Sponsor Interest Form",
 			Description = "Interested in supporting this amazing event? Let us know!",
-			Format = @"{""$schema"":""http://json-schema.org/draft-04/schema#"",""type"":""object"",""properties"":{""Name"":{""type"":""string""},""Email"":{""type"":""string""},""Country"":{""type"":""string""},""SponsorInterest"":{""type"":""boolean""},""Budget"":{""type"":""integer""},""Source"":{""type"":""string""}},""required"":[""Name"",""Email"",""Country"",""SponsorInterest"",""Budget"",""Source""]}"
+			Format = @"{
+                ""type"": ""object"",
+                ""properties"": {
+                  ""name"": {
+                    ""type"": ""string"",
+                    ""description"": ""Company Name"",
+                    ""title"": ""Name""
+                  },
+                  ""email"": {
+                    ""type"": ""string"",
+                    ""description"": ""Contact E-Mail"",
+                    ""title"": ""Email""
+                  },
+                  ""sponsorInterest"": {
+                    ""type"": ""boolean"",
+                    ""description"": ""Are you interested in Sponsoring?"",
+                    ""title"": ""Sponsor Interest""
+                  },
+                  ""Budget"": {
+                    ""type"": ""integer"",
+                    ""description"": ""Maximum budget for the campaign"",
+                    ""title"": ""Budget""
+                  }
+                }
+              }"
 		});
 		forms.Add(new EventForm
 		{
@@ -301,7 +325,31 @@ public class CreateDemoData
 			EventId = eventId,
 			Name = "General Event Feedback",
 			Description = "Please let us know how you as an attendee liked our event",
-			Format = @"{""$schema"":""http://json-schema.org/draft-04/schema#"",""type"":""object"",""properties"":{""Name"":{""type"":""string""},""RatingOverall"":{""type"":""integer""},""RaingSpeaker"":{""type"":""integer""},""RatingContent"":{""type"":""integer""},""WouldVisitAgain"":{""type"":""boolean""}},""required"":[""Name"",""RatingOverall"",""RaingSpeaker"",""RatingContent"",""WouldVisitAgain""]}"
+			Format = @"{
+                ""type"": ""object"",
+                ""properties"": {
+                  ""name"": {
+                    ""type"": ""string"",
+                    ""description"": ""Your Name"",
+                    ""title"": ""Your Name""
+                  },
+                  ""ratingOverall"": {
+                    ""type"": ""integer"",                   
+                    ""description"": ""Your overall rating 1 - 5"",
+                    ""title"": ""Overall Rating""
+                  },
+                  ""ratingContent"": {
+                    ""type"": ""integer"",
+                    ""description"": ""Your rating of the content 1-5"",
+                    ""title"": ""Content Rating""
+                  },
+                  ""Comment"": {
+                    ""type"": ""string"",
+                    ""description"": ""Comment about experience"",
+                    ""title"": ""Comment""
+                  }
+                }
+              }"
 		});
 
 		return forms;

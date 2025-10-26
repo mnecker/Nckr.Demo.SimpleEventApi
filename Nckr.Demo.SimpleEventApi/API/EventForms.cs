@@ -8,6 +8,9 @@ using Microsoft.Extensions.Primitives;
 using Nckr.Demo.SimpleEventApi.Models;
 using Nckr.Demo.SimpleEventApi.Setup;
 using System.IO;
+using System.Runtime.InteropServices.JavaScript;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Nckr.Demo.SimpleEventApi.API;
 
@@ -80,7 +83,8 @@ public class EventForms
 				schema = form.Format;
 			}
 		}
-		return new ObjectResult(schema);
+		var jsonSchema = JsonObject.Parse(schema);
+		return new ObjectResult(jsonSchema);
 	}
 
 	[Function("SubmitEventForm")]
@@ -115,6 +119,51 @@ public class EventForms
 		};
 		await formSubmissionClient.AddEntityAsync<EventFormSubmission>(submission);
 
+		ExecuteWebhooks(submission, eventId, subscriptionKey);
+
 		return new JsonResult(submission);
+	}
+
+	private async Task ExecuteWebhooks(EventFormSubmission submission, string eventId, string subcriptionKey)
+	{
+		_logger.LogInformation("Executing webhooks for form submission {SubmissionId}", submission.RowKey);
+
+		string partitionKey = $"{subcriptionKey}-{eventId}";
+		_logger.LogInformation("Looking for webhooks with partition key {PartitionKey}", partitionKey);
+		TableClient webhooks = _tableClientFactory.GetWebhookService();
+		var webhookEntities = webhooks.QueryAsync<TableEntity>(filter: $"PartitionKey eq '{partitionKey}'");
+		await foreach (Page<TableEntity> page in webhookEntities.AsPages())
+		{
+			foreach (TableEntity entity in page.Values)
+			{
+				string url = entity.GetString("CallBackUrl");
+				string method = "POST";
+				_logger.LogInformation($"Webhook URL: {url}");
+				using (var httpClient = new HttpClient())
+				{
+					EventNotification webhookPayload = new EventNotification
+					{
+						EventId = eventId,
+						Topic = "Forms",
+						Content = JsonObject.Parse(submission.ResponseData).ToJsonString()
+					};
+					var content = new StringContent(JsonSerializer.Serialize(webhookPayload), System.Text.Encoding.UTF8, "application/json");
+					HttpResponseMessage response = method.ToUpper() switch
+					{
+						"POST" => await httpClient.PostAsync(url, content),
+						"PUT" => await httpClient.PutAsync(url, content),
+						_ => throw new NotSupportedException($"HTTP method {method} is not supported for webhooks.")
+					};
+					if (response.IsSuccessStatusCode)
+					{
+						_logger.LogInformation("Successfully executed webhook {WebhookUrl} for submission {SubmissionId}", url, submission.RowKey);
+					}
+					else
+					{
+						_logger.LogWarning("Failed to execute webhook {WebhookUrl} for submission {SubmissionId}. Status Code: {StatusCode}", url, submission.RowKey, response.StatusCode);
+					}
+				}
+			}
+		}
 	}
 }

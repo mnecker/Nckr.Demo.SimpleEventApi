@@ -21,7 +21,7 @@ public class InitializeTables
     }
 
     [Function("InitializeTables")]
-    public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
+    public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
     {
         _logger.LogInformation("InitializeTables function triggered.");
 
